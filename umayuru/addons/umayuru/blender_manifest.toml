@@ -1,0 +1,14 @@
+schema_version = "1.0.0"
+id = "umayuru"
+version = "2.6.1"
+name = "Umayuru"
+tagline = "Streamline the workflow for umamusume models"
+maintainer = "MFGC"
+type = "add-on"
+license = ["SPDX:GPL-3.0-or-later"]
+blender_version_min = "3.6.0"
+website = "https://github.com/voyager-py/umayuru"
+python_dependencies = ["Pillow"]
+[permissions]
+network = "Requires Pillow dependency (Python)"
+files = "Requires access to configuration files and animation cache"

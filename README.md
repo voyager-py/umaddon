@@ -1,4 +1,4 @@
-# Umaddon
+# Umayuru
 
 Fork of [Blender-Uma-Addon](https://github.com/XiaoVonline/Blender-Uma-Addon) with Blender 3.6 LTS support
 
