@@ -1,6 +1,6 @@
 schema_version = "1.0.0"
 id = "umayuru"
-version = "2.6.1"
+version = "1.0.0"
 name = "Umayuru"
 tagline = "Streamline the workflow for umamusume models"
 maintainer = "MFGC"

@@ -1,0 +1,77 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Extract version from manifest
+        id: manifest
+        run: |
+          VERSION=$(grep '^version =' umayuru/blender_manifest.toml | cut -d '"' -f 2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Package addon
+        run: |
+          mkdir build
+          cp -r umayuru build/
+          cp LICENSE build/umayuru/ 2>/dev/null || true
+          cd build
+          zip -r ../umayuru-${{ steps.manifest.outputs.version }}.zip umayuru/
+          cd ..
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: addon-package
+          path: umayuru-*.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: addon-package
+          path: ./
+      
+      - name: Extract version from manifest
+        id: manifest
+        run: |
+          VERSION=$(grep '^version =' umayuru/blender_manifest.toml | cut -d '"' -f 2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Generate changelog
+        id: changelog
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "changelog<<EOF" >> $GITHUB_OUTPUT
+            cat CHANGELOG.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changelog=## 🚀 Version ${{ steps.manifest.outputs.version }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${{ steps.manifest.outputs.version }}"
+          ZIP_FILE="umayuru-${VERSION}.zip"
+          NOTES="${{ steps.changelog.outputs.changelog }}"
+          
+          gh release create "$TAG" \
+            --title "Umayuru $VERSION" \
+            --notes "$NOTES" \
+            "$ZIP_FILE"
